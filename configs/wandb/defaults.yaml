@@ -1,0 +1,5 @@
+# 9, 2 for regression and classification
+# also derive these in the report, epsilon doesn't have to be done with an exhausitve search, a simpel cnn is fine
+setup:
+        project: responsibleai-3
+        entity: klausjupiter
