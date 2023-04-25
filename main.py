@@ -6,9 +6,6 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 # Saving and loading
 import pickle
 
-# convret to torch for FID
-import torch
-
 ## Jax
 
 # Stop jax from taking up 90% of GPU vram
@@ -28,7 +25,7 @@ from data import dataload
 
 # Model and optimizer
 from models.model import get_model 
-from optimizer.optimizers import get_optim
+from optimizers.optimizer import get_optim
 
 # Loss
 from loss.loss import get_loss
@@ -69,30 +66,19 @@ def run_experiment(cfg):
     # Get optimizer and its parameters
     optimizer, optim_parameters = get_optim(cfg, model_parameters)
 
-    # get sde
-    SDE = get_sde(cfg)
-
     # get loss functions and convert to grad function
-    loss_fn = get_loss(cfg) # loss_fn(func, function_parameters, data, perturbed_data, time, key)
+    loss_fn = get_loss(cfg) 
 
-    grad_fn = jax.grad(loss_fn,1) # TODO: try to JIT function partial(jax.jit,static_argnums=0)(jax.grad(loss_fn,1))
+    grad_fn = jax.jit(jax.grad(loss_fn,1)) 
 
     # start training for each epoch
     for epoch in range(cfg.train_and_test.train.epochs): 
         for i, (data, labels) in enumerate(train_dataset): # batch training
 
-            data = jax.device_put(data, sharding.reshape(n, 1))
+           
             # split key to keep randomness "random" for each training batch
             key, *subkey = jax.random.split(key, 4)
 
-            # get timesteps given random key for this batch and data shape
-            timesteps = jax.random.uniform(subkey[0], (data.shape[0],), minval=0, maxval=1)
-
-            # Perturb the data with the timesteps trhough sampling sde trick (for speed, see paper for explanation)
-            perturbed_data = SDE.sample(timesteps, data, subkey[1])
-
-            # scale timesteps for more significance
-            scaled_timesteps = timesteps*999
 
             # get grad for this batch
               # loss_value, grads = jax.value_and_grad(loss_fn)(model_parameters, model_call, data, labels, t) # is this extra computation time
@@ -109,24 +95,7 @@ def run_experiment(cfg):
             if i % cfg.wandb.log.frequency == 0:
                   if cfg.wandb.log.loss:
                     wandb.log({"loss": loss_fn(model_call, model_parameters, data, perturbed_data, scaled_timesteps, subkey[2])})
-                    # wandb.log({"loss": loss_value})
-                  if cfg.wandb.log.img:
-                     # dt0 = - 1/N
-                    drift = lambda t,y, args: SDE.reverse_drift(y, jnp.array([t]), args)
-                    diffusion = lambda t,y, args: SDE.reverse_diffusion(y, jnp.array([t]), args)
-                    get_sample = lambda t, key1, key0, xt: sample(0, 0, t.astype(float)[0], -1/1000, drift, diffusion, [model_call, model_parameters, key0], xt, key1) 
-                    key, *subkey = jax.random.split(key, len(perturbed_data)*2 + 1)
 
-                    args = (timesteps.reshape(-1,1), jnp.array(subkey[:len(subkey)//2]), jnp.array(subkey[len(subkey)//2:]), perturbed_data)
-
-                    images = jax.vmap(get_sample, (0, 0, 0, 0))(*args)
-
-                    # Rescale images for plotting
-                    mins, maxs=jnp.min(perturbed_data, axis=1).reshape(-1, 1), jnp.max(perturbed_data, axis=1).reshape(-1,1)
-                    rescaled_images = (perturbed_data-mins)/(maxs-mins)*255
-                    display_images(cfg, images, labels)
-                    display_images(cfg, perturbed_data, labels, log_title="Perturbed images")
-                    display_images(cfg, rescaled_images, labels, log_title="Min-Max Rescaled")
                   if cfg.wandb.log.parameters:
                           with open(os.path.join(wandb.run.dir, "paremeters.pickle"), 'wb') as f:
                             pickle.dump((epoch*len(train_dataset) + i, model_parameters, optim_parameters), f, pickle.HIGHEST_PROTOCOL)
