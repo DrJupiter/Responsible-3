@@ -64,3 +64,14 @@ def dataload(cfg):
     test_generator = NumpyLoader(mnist_dataset_test, batch_size=cfg.train_and_test.test.batch_size, shuffle=cfg.train_and_test.test.shuffle) # num_workers=mp.cpu_count()
 
     return training_generator, test_generator 
+
+def label_transformation(cfg):
+    if cfg.train_and_test.task == "classification":
+      k = len(cfg.dataset.classes)
+      def one_hot(x, dtype=jnp.float32):
+        """Create a one-hot encoding of x of size k."""
+        return jnp.array(x[:, None] == jnp.arange(k), dtype)
+    if cfg.train_and_test.task == "regression":
+        return lambda x: x
+    
+    raise NotImplementedError(f"Label transformation for {cfg.train_and_test.task} not found")

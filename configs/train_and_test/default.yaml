@@ -1,3 +1,5 @@
+task: "classification"
+
 train:
    batch_size: 4
    mode: train # eval
