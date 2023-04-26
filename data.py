@@ -55,12 +55,13 @@ def dataload(cfg):
     Returns the train and test dataset specified in the config
     in the form of a pytorch dataloader
     """
+    target_transform = transforms.Lambda(label_transformation(cfg))
 
     transform = transforms.Compose([FlattenAndCast()])
-    mnist_dataset_train = MNIST(cfg.dataset.path, download=True, transform=transform)
+    mnist_dataset_train = MNIST(cfg.dataset.path, download=True, transform=transform, target_transform=target_transform)
     training_generator = NumpyLoader(mnist_dataset_train, batch_size=cfg.train_and_test.train.batch_size, shuffle=cfg.train_and_test.train.shuffle) # num_workers=mp.cpu_count()
 
-    mnist_dataset_test = MNIST(cfg.dataset.path, train=False, download=True, transform=transform)
+    mnist_dataset_test = MNIST(cfg.dataset.path, train=False, download=True, transform=transform, target_transform=target_transform)
     test_generator = NumpyLoader(mnist_dataset_test, batch_size=cfg.train_and_test.test.batch_size, shuffle=cfg.train_and_test.test.shuffle) # num_workers=mp.cpu_count()
 
     return training_generator, test_generator 
