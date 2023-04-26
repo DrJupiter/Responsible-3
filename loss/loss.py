@@ -1,7 +1,10 @@
+from loss.cse import cross_entropy
+from loss.mse import mse
+
 
 def get_loss(cfg):
     if cfg.loss.name == "cross_entropy":
-        raise NotImplementedError("Implement")
+        return cross_entropy
     elif cfg.loss.name == "mse":
-        return NotImplementedError("Implement")
+        return mse
     raise NotImplementedError(f"The loss {cfg.loss.name} is not implemented")
