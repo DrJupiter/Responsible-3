@@ -1,1 +1,0 @@
-{"epsilon": 3.5, "_timestamp": 1682520671.0552442, "_runtime": 28.8069851398468, "_step": 9, "pertubation scale": 2.5714285714285716, "loss": 1206.607666015625, "average accuracy": 84017.9140625, "_wandb": {"runtime": 28}}

@@ -1,1 +1,0 @@
-{"task": "classification", "_timestamp": 1682519034.3104663, "_runtime": 77.41076231002808, "_step": 7, "epsilon": 2, "pertubation scale": 1.0, "loss": 2.3010802268981934, "average accuracy": 0.1136000007390976, "_wandb": {"runtime": 99}}
