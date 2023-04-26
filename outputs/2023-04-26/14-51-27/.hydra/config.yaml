@@ -1,0 +1,49 @@
+wandb:
+  setup:
+    project: responsibleai-3
+    entity: klausjupiter
+dataset:
+  name: mnist
+  path: ./datasets/
+  shape:
+  - -1
+  - 28
+  - 28
+  - 1
+  classes:
+  - zero
+  - one
+  - two
+  - three
+  - four
+  - five
+  - six
+  - seven
+  - eight
+  - nine
+train_and_test:
+  task: classification
+  train:
+    batch_size: 4
+    mode: train
+    epochs: 100
+    shuffle: true
+  test:
+    batch_size: 1
+    shuffle: true
+    img_save_loc: gen_imgs/
+model:
+  name: classifier
+  key: 0
+  sizes:
+  - 784
+  - 512
+  - 512
+  - 10
+visualization:
+  visualize_img: false
+optimizer:
+  name: adam
+  learning_rate: 0.01
+loss:
+  name: cross_entropy

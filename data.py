@@ -62,16 +62,18 @@ def dataload(cfg):
     training_generator = NumpyLoader(mnist_dataset_train, batch_size=cfg.train_and_test.train.batch_size, shuffle=cfg.train_and_test.train.shuffle) # num_workers=mp.cpu_count()
 
     mnist_dataset_test = MNIST(cfg.dataset.path, train=False, download=True, transform=transform, target_transform=target_transform)
-    test_generator = NumpyLoader(mnist_dataset_test, batch_size=cfg.train_and_test.test.batch_size, shuffle=cfg.train_and_test.test.shuffle) # num_workers=mp.cpu_count()
+    test_generator = NumpyLoader(mnist_dataset_test, batch_size=cfg.train_and_test.test.batch_size, shuffle=cfg.train_and_test.test.shuffle) 
 
-    return training_generator, test_generator 
+    return training_generator, test_generator
 
 def label_transformation(cfg):
     if cfg.train_and_test.task == "classification":
       k = len(cfg.dataset.classes)
       def one_hot(x, dtype=jnp.float32):
         """Create a one-hot encoding of x of size k."""
-        return jnp.array(x[:, None] == jnp.arange(k), dtype)
+        return jnp.array(x== jnp.arange(k), dtype)
+        #return jnp.array(x[:, None] == jnp.arange(k), dtype)
+      return one_hot
     if cfg.train_and_test.task == "regression":
         return lambda x: x
     

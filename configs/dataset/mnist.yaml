@@ -5,3 +5,14 @@ shape:
   - 28
   - 28
   - 1
+classes:
+  - zero
+  - one
+  - two
+  - three
+  - four
+  - five
+  - six
+  - seven
+  - eight
+  - nine

@@ -27,8 +27,14 @@ from data import dataload
 from models.model import get_model 
 from optimizers.optimizer import get_optim
 
+# Accuracy
+from utils.accuracy import get_accuracy
+
 # Loss
 from loss.loss import get_loss
+
+# Pertubation
+from pertubation.pertubation import get_pertubation
     
 # Visualization
 from visualization.visualize import display_images
@@ -45,12 +51,12 @@ import optax
 ### Train loop:
 
 # Gets config
-@hydra.main(config_path="configs/", config_name="defaults", version_base='1.3')
+@hydra.main(config_path="configs/", config_name="classification", version_base='1.3')
 def run_experiment(cfg):
 
     # initialize Weights and Biases
     print(cfg)
-    wandb.init(entity=cfg.wandb.setup.entity, project=cfg.wandb.setup.project)
+    wandb.init(entity=cfg.wandb.setup.entity, project=cfg.wandb.setup.project, name=f"{cfg.train_and_test.task}-epsilon:{cfg.pertubation.epsilon}")
 
     # Get randomness key
     key = jax.random.PRNGKey(cfg.model.key)
@@ -69,7 +75,11 @@ def run_experiment(cfg):
     # get loss functions and convert to grad function
     loss_fn = get_loss(cfg) 
 
-    grad_fn = jax.jit(jax.grad(loss_fn,1)) 
+    grad_fn = jax.jit(jax.grad(loss_fn,1), static_argnums=0) 
+
+    accuracy_fn = get_accuracy(cfg)
+
+    pertubation_fn = get_pertubation(cfg)
 
     # start training for each epoch
     for epoch in range(cfg.train_and_test.train.epochs): 
@@ -81,7 +91,8 @@ def run_experiment(cfg):
 
             # get grad for this batch
               # loss_value, grads = jax.value_and_grad(loss_fn)(model_parameters, model_call, data, labels, t) # is this extra computation time
-            grads = grad_fn(model_call, model_parameters, data, labels)
+            perturbed_labels = pertubation_fn(subkey[0], labels) 
+            grads = grad_fn(model_call, model_parameters, data, perturbed_labels)
 
             # get change in model_params and new optimizer params
               # optim_parameters, model_parameters = optim_alg(optim_parameters, model_parameters, t_data, labels)
@@ -93,7 +104,7 @@ def run_experiment(cfg):
             # Logging loss and an image
             if i % cfg.wandb.log.frequency == 0:
                   if cfg.wandb.log.loss:
-                    wandb.log({"loss": loss_fn(model_call, model_parameters, data, labels)})
+                    wandb.log({"loss": loss_fn(model_call, model_parameters, data, perturbed_labels)})
 
                   if cfg.wandb.log.parameters:
                           with open(os.path.join(wandb.run.dir, "paremeters.pickle"), 'wb') as f:
@@ -101,6 +112,11 @@ def run_experiment(cfg):
                           wandb.save("paramters.pickle")
         # Test loop
         if epoch % cfg.wandb.log.epoch_frequency == 0:
-            pass
+            if cfg.wandb.log.accuracy:
+              acc = 0
+              for data, labels in test_dataset:
+                  acc += accuracy_fn(model_call, model_parameters, data, labels)
+                  
+              wandb.log({"average accuracy": jnp.mean(acc)})
 if __name__ == "__main__":
     run_experiment()

@@ -3,3 +3,11 @@
 setup:
         project: responsibleai-3
         entity: klausjupiter
+log:
+        loss: true
+        img: true
+        n_images: 10
+        frequency: 1000
+        epoch_frequency: 1
+        parameters: false
+        accuracy: true

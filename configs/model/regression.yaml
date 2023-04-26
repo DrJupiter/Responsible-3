@@ -1,0 +1,7 @@
+name: regression
+key: 0
+sizes:
+  - 784
+  - 512
+  - 512
+  - 1

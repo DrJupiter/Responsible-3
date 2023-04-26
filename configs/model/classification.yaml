@@ -1,0 +1,7 @@
+name: classifier
+key: 0
+sizes:
+  - 784
+  - 512
+  - 512
+  - 10

@@ -1,0 +1,60 @@
+wandb:
+  setup:
+    project: responsibleai-3
+    entity: klausjupiter
+  log:
+    loss: true
+    img: true
+    n_images: 10
+    frequency: 1000
+    epoch_frequency: 1
+    parameters: false
+    accuracy: true
+dataset:
+  name: mnist
+  path: ./datasets/
+  shape:
+  - -1
+  - 28
+  - 28
+  - 1
+  classes:
+  - zero
+  - one
+  - two
+  - three
+  - four
+  - five
+  - six
+  - seven
+  - eight
+  - nine
+train_and_test:
+  task: regression
+  train:
+    batch_size: 128
+    mode: train
+    epochs: 4
+    shuffle: true
+  test:
+    batch_size: 10000
+    shuffle: true
+    img_save_loc: gen_imgs/
+model:
+  name: regression
+  key: 0
+  sizes:
+  - 784
+  - 512
+  - 512
+  - 1
+visualization:
+  visualize_img: false
+optimizer:
+  name: adam
+  learning_rate: 0.01
+loss:
+  name: mse
+pertubation:
+  name: laplace
+  epsilon: 3.5

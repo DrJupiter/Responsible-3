@@ -1,12 +1,12 @@
 task: "classification"
 
 train:
-   batch_size: 4
+   batch_size: 128
    mode: train # eval
-   epochs: 100
+   epochs: 4
    shuffle: true
 test:
-   batch_size: 1
+   batch_size: 10000
    shuffle: true
    img_save_loc: "gen_imgs/"
    

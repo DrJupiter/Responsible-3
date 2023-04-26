@@ -1,0 +1,9 @@
+defaults:
+        - wandb : defaults
+        - dataset: mnist
+        - train_and_test: default
+        - model : regression # regression
+        - visualization: visualize
+        - optimizer: adam
+        - loss: mse # entropy, mse
+        - pertubation: laplace
